@@ -7,12 +7,14 @@ void bitonic_sort(float* a, const int N, bool desc) {
     // 长为 stride 的序列已经是双调序列了，现在对其排序
     for (int stride = 2; stride <= N; stride <<= 1) {
         int half_stride = stride >> 1;
+        // 这里 s 的含义是每次要对长度为 s 的序列从中间断开分为两个双调序列
         for (int s = stride; s >= 2; s >>= 1) {
             int hs = s >> 1;
             // 每次只用处理一半的数据
             for (int i = 0; i < N / 2; i++) {
                 // 每 half_stride 个元素，他们的排序规则都保持一致
                 // 注意这里，本来是每个 idx / stride 的，但是因为现在 i 表示前一半，所以 stride 也要 / 2
+                // (其实找规律发现一下也行，每次都枚举的是前一半)
                 bool inner_desc = ((i / half_stride) & 1);
                 // j k 为一个 s 范围内相应的两个下标，需要对其进行排序
                 int j = (i / hs) * s + i % hs;
