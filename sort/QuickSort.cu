@@ -78,12 +78,23 @@ void quick_sort_gpu(float* a, const int N) {
     float *a_d;
     cudaMalloc((void**) &a_d, sizeof(float) * N);
     cudaMemcpy(a_d, a, sizeof(float) * N, cudaMemcpyHostToDevice);
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start);
     cdp_simple_quicksort<<<1, 1>>>(a_d, 0, N - 1, 0);
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+    float time;
+    cudaEventElapsedTime(&time, start, stop);
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+    printf("gpu costs %f s\n", time / 1e3);
     cudaMemcpy(a, a_d, sizeof(float) * N, cudaMemcpyDeviceToHost);
 }
 
 int main() {
-    const int N = 1000000;
+    const int N = 10000000;
     float* a = (float*) malloc(sizeof(float) * N);
     float* b = (float*) malloc(sizeof(float) * N);
     srand(time(NULL));
@@ -92,7 +103,13 @@ int main() {
         b[i] = a[i];
     }
     quick_sort_gpu(a, N);
+    float esp_time_cpu;
+	clock_t start_cpu, stop_cpu;
+    start_cpu = clock();
     std::sort(b, b + N);
+    stop_cpu = clock();
+    esp_time_cpu = (float)(stop_cpu - start_cpu) / CLOCKS_PER_SEC;
+    printf("cpu costs %f s\n", esp_time_cpu);
     for (int i = 0; i < N; i++) {
         if (a[i] != b[i]) {
             printf("对比有差异!\n");
