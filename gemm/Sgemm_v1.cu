@@ -166,6 +166,8 @@ float testError(void) {
     cudaMemcpy(d_a, h_a, size_a, cudaMemcpyHostToDevice);
     cudaMemcpy(d_b, h_b, size_b, cudaMemcpyHostToDevice);
     Sgemm_v1<<<gridDim, blockDim>>>(d_a, d_b, d_c, M, N, K);
+    cudaDeviceSynchronize();
+    printf("%s\n", cudaGetErrorString(cudaGetLastError()));
     cudaMemcpy(h_d_c, d_c, size_c, cudaMemcpyDeviceToHost);
 
     float max_error = 0.0;
